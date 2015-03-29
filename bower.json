@@ -1,0 +1,35 @@
+{
+  "name": "backbone.tango",
+  "version": "0.1.0",
+  "homepage": "https://github.com/emaphp/backbone.tango",
+  "authors": [
+    "Emmanuel Antico <emmanuel.antico@gmail.com>"
+  ],
+  "description": "Notification library for Backbone.js",
+  "main": "dist/backbone.tango.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "backbone",
+    "notification",
+    "tango"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "backbone": ">=1.1.0",
+    "underscore": ">=1.6.0"
+  },
+  "devDependencies": {
+    "jquery": "~2.1.3"
+  }
+}

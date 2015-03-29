@@ -3,7 +3,7 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
 
         jshint: {
-            files: ['Gruntfile.js', 'dist/<%= pkg.name %>.js'],
+            files: ['Gruntfile.js', 'dist/js/<%= pkg.name %>.js'],
 
             options: {
                 globals: {
@@ -15,8 +15,24 @@ module.exports = function(grunt) {
 
         uglify: {
             dist: {
+                options: {
+                    sourceMap: true
+                },
+                
                 files: {
-                    'dist/<%= pkg.name %>.min.js': ['dist/<%= pkg.name %>.js']
+                    'dist/js/<%= pkg.name %>.min.js': ['dist/js/<%= pkg.name %>.js']
+                }
+            }
+        },
+
+        cssmin: {
+            options: {
+                sourceMap: true
+            },
+
+            target: {
+                files: {
+                    'dist/css/<%= pkg.name %>.min.css': 'dist/css/<%= pkg.name %>.css'
                 }
             }
         },
@@ -42,6 +58,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
 
 	//copies dependencies to test directory
 	grunt.registerTask('prepare', ['copy:jquery', 'copy:underscore', 'copy:backbone']);
@@ -50,5 +67,5 @@ module.exports = function(grunt) {
     grunt.registerTask('test', ['jshint']);
 
     //minifies library
-    grunt.registerTask('release', ['jshint', 'uglify:dist']);
+    grunt.registerTask('release', ['jshint', 'uglify:dist', 'cssmin']);
 };

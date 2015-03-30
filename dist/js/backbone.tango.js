@@ -8,25 +8,26 @@
         define(['backbone', 'underscore'], function(Backbone, _) {
             return factory(global, Backbone, _);
         });
-    }
-    else if (typeof exports !== 'undefined')
+    } else if (typeof exports !== 'undefined') {
         module.exports = factory(global, require('backbone'), require('underscore'));
-    else
+    } else {
         factory(global, global.Backbone, global._);
+    }
 }(this, function (global, Backbone, _) {
     var $ = Backbone.$,
         notificationId = 0,
         containers = {};
 
     //default options
-    var __defaults = {
+    var notifierDefaults = {
         target: 'body',
         defaultClass: 'tango',
         containerBaseId: 'tango-container',
-        position: 'bottom-left',
+        containerClass: 'tango-container',
+        position: 'top-right',
         timeOut: 5000,
         newestOnTop: true,
-        template: _.template('<div class="<%=cssClass%>"><%=message%></div>'),
+        template: undefined,
         type: 'info',
         
         //show options
@@ -47,8 +48,8 @@
     };
 
     var Tango = Backbone.Tango = function(defaults) {
-        this.defaults = _.extend(_.extend({}, __defaults), defaults);
-        Tango.prototype.initialize.call(this, defaults);
+        this.defaults = _.extend(_.extend({}, notifierDefaults), defaults);
+        this.initialize.apply(this, arguments);
     };
 
     Tango.extend = Backbone.Model.extend;
@@ -161,6 +162,7 @@
         }
     });
 
+    //generates a template vars object from the given options
     function compact(type, message, options) {
         var data = {
             options: _.isObject(options) ? _.extend({type: type}, options) : {type: type} 
@@ -169,8 +171,7 @@
         //wrap message if it isn't an object
         if (_.isObject(message)) {
             return _.extend(data, message);
-        }
-        else {
+        } else {
             data.message = message;
         }
 
@@ -197,10 +198,12 @@
         },
 
         notify: function(data) {
+            //generates a container id from the given options
             function getContainerId(options) {
                 return options.containerBaseId + '-' + options.position;
             }
 
+            //obtains a container element for the given options
             function getContainer(options) {
                 var containerId = getContainerId(options);
                 if (containers[containerId]) {
@@ -213,14 +216,17 @@
                 return $container;
             }
 
+            //returns a new container element
             function createContainer(options, id) {
+                //create element
                 $container = $('<div/>')
                     .attr('id', id)
-                    .addClass('tango-container')
-                    .addClass('tango-' + options.position)
+                    .addClass(options.containerClass)
+                    .addClass(options.defaultClass + '-' + options.position)
                     .attr('aria-live', 'polite')
                     .attr('role', 'alert');
 
+                //inject 'clear' method
                 $container = _.extend($container, {
                     childList: {},
                     clear: function() {
@@ -236,20 +242,29 @@
                 return $container;
             }
 
+            //override notifier options
             var options = typeof(data.options) !== 'undefined' ? _.extend(this.defaults, data.options) : this.defaults;
+
+            //get template from options or generate a default one            
+            var template = options.template || _.template('<div class="<%=cssClass%>"><%=message%></div>');
+
+            //create container or obtain previous
             var $container = getContainer(options);
 
+            //add 'id' and 'cssClass' attributes to template vars
             data = _.extend({
                 id: ++notificationId,
-                cssClass: options.defaultClass + (options.type ? ' tango-' + options.type : '')
+                cssClass: options.defaultClass + (options.type ? ' ' + options.defaultClass + '-' + options.type : '')
             }, data);
 
+            //create notification view
             var view = new NotificationView({
-                el: $(options.template(data)),
+                el: $(template(data)),
                 $container: $container,
                 options: options
             });
             
+            //render and return
             $container.childList[view.cid] = view;
             view.render();
             return view;

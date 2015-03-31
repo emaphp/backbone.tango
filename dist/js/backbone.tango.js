@@ -27,10 +27,10 @@
         containerClass: 'tango-container',
         position: 'top-right',
         type: 'info',
-        timeOut: 5000,
+        timeout: 5000,
         newestOnTop: true,
         template: undefined,
-        view: undefined,
+        templateFn: undefined,
         
         //show options
         showMethod: 'fadeIn',
@@ -46,11 +46,20 @@
         onHidden: undefined,
         onShown: undefined,
         tapToDismiss: true,
-        extendedTimeOut: 1000
+        extendedTimeout: 1000
     };
 
     var Tango = Backbone.Tango = function(defaults) {
-        this.defaults = _.extend(_.extend({}, notifierDefaults), defaults);
+        //check if argument is a class
+        if (_.isFunction(defaults)) {
+            //obtain defaults from class prototype
+            this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(defaults.defaults) ? defaults.defaults : {});
+            this.viewClass = defaults;
+        } else {
+            this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(defaults) ? defaults : {});
+            this.viewClass = View; //use default view
+        }
+
         this.initialize.apply(this, arguments);
     };
 
@@ -65,7 +74,7 @@
         afterHidden:  3
     };
 
-    var NotificationView = Tango.NotificationView = Backbone.View.extend({
+    var View = Tango.View = Backbone.View.extend({
         initialize: function(options) {
             if (typeof options !== 'undefined') {
                 this.$container = options.$container;
@@ -103,10 +112,10 @@
             var opts = this.options,
                 self = this;
             
-            if (opts.timeOut > 0 || opts.extendedTimeOut > 0) {
+            if (opts.timeout > 0 || opts.extendedTimeout > 0) {
                 this.intervalId = setTimeout(function() {
                     self.hide();
-                }, opts.extendedTimeOut);
+                }, opts.extendedTimeout);
             }
         },
         
@@ -138,10 +147,10 @@
                 }
             });
 
-            if (opts.timeOut > 0) {
+            if (opts.timeout > 0) {
                 this.intervalId = setTimeout(function() {
                     self.hide();
-                }, opts.timeOut);
+                }, opts.timeout);
             }
         },
         
@@ -155,7 +164,8 @@
             }
             
             var opts = this.options,
-                self = this;
+                self = this,
+                data = this.data;
             
             self._state = Tango.ViewState.beforeHidden;
 
@@ -163,7 +173,7 @@
                 duration: opts.hideDuration,
                 easing: opts.hideEasing,
                 complete: function() {
-                    this._state = Tango.ViewState.afterHidden;
+                    self._state = Tango.ViewState.afterHidden;
 
                     //trigger a 'hidden' event
                     self.trigger('hidden', self);
@@ -182,7 +192,7 @@
                     
                     //call 'onHidden' callback
                     if (_.isFunction(opts.onHidden)) {
-                        opts.onHidden.call();
+                        opts.onHidden.call(self, data, opts);
                     }
                 }
             });
@@ -203,9 +213,6 @@
         getContainer: function() {
             return this.container;
         }
-    }, {
-        template: _.template('<div class="<%=cssClass%>"><%=message%></div>'), //default template
-        templateFn: undefined
     });
 
     //generates a data object for a template
@@ -226,24 +233,24 @@
     _.extend(Tango.prototype, {
         initialize: function() {},
 
-        info: function(message, options) {
-            var opts = _.extend({type: 'info'}, _.isObject(options) ? options : {});
-            return this.notify(compact(message, opts), opts);
+        info: function(message, optionsOverride) {
+            var options = _.extend({type: 'info'}, _.isObject(optionsOverride) ? optionsOverride : {});
+            return this.notify(compact(message, options), options);
         },
 
-        success: function(message, options) {
-            var opts = _.extend({type: 'success'}, _.isObject(options) ? options : {});
-            return this.notify(compact(message, opts), opts);
+        success: function(message, optionsOverride) {
+            var options = _.extend({type: 'success'}, _.isObject(optionsOverride) ? optionsOverride : {});
+            return this.notify(compact(message, options), options);
         },
 
-        warning: function(message, options) {
-            var opts = _.extend({type: 'warning'}, _.isObject(options) ? options : {});
-            return this.notify(compact(message, opts), opts);
+        warning: function(message, optionsOverride) {
+            var options = _.extend({type: 'warning'}, _.isObject(optionsOverride) ? optionsOverride : {});
+            return this.notify(compact(message, options), options);
         },
 
-        error: function(message, options) {
-            var opts = _.extend({type: 'error'}, _.isObject(options) ? options : {});
-            return this.notify(compact(message, opts), opts);
+        error: function(message, optionsOverride) {
+            var options = _.extend({type: 'error'}, _.isObject(optionsOverride) ? optionsOverride : {});
+            return this.notify(compact(message, options), options);
         },
 
         notify: function(data, optionsOverride) {
@@ -258,8 +265,7 @@
                 if (containers[containerId]) {
                     return containers[containerId];
                 }
-                
-                $container = $('#' + containerId);
+
                 $container = createContainer(options, containerId);
                 containers[containerId] = $container;
                 return $container;
@@ -276,7 +282,7 @@
                     .attr('role', 'alert');
 
                 //inject 'clear' method
-                $container = _.extend($container, {
+                _.extend($container, {
                     childList: {},
                     clear: function() {
                         if (this.childList.length !== 0) {
@@ -291,18 +297,26 @@
                 return $container;
             }
 
-            function getTemplate(viewClass, options) {
-                return _.isFunction(viewClass.templateFn) ? viewClass.template(options) : viewClass.template;
+            var _defaultTemplate = _.template('<div class="<%=cssClass%>"><%=message%></div>');
+
+            function getTemplate(options) {
+                var template;
+
+                if (_.isFunction(options.templateFn)) {
+                    template = options.templateFn(options);
+                }
+
+                return template || options.template || _defaultTemplate;
             }
 
             //override notifier options
             var options = typeof(optionsOverride) !== 'undefined' ? _.extend(this.defaults, optionsOverride) : this.defaults;
 
             //get view class
-            var viewClass = options.view || NotificationView;
+            var viewClass = this.viewClass || View;
 
             //get template function
-            var template = options.template || getTemplate(viewClass, options);
+            var template = getTemplate(options);
         
             //create container or obtain previous
             var $container = getContainer(options);

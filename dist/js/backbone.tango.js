@@ -20,11 +20,13 @@
 
     //default options
     var notifierDefaults = {
-        //view options
+        //container options
         target: 'body',
-        defaultClass: 'tango',
         containerBaseId: 'tango-container',
         containerClass: 'tango-container',
+
+        //view options
+        defaultClass: 'tango',
         position: 'top-right',
         type: 'info',
         timeout: 5000,
@@ -53,7 +55,7 @@
         //check if argument is a class
         if (_.isFunction(defaults)) {
             //obtain defaults from class prototype
-            this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(defaults.defaults) ? defaults.defaults : {});
+            this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(defaults.options) ? defaults.options : {});
             this.viewClass = defaults;
         } else {
             this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(defaults) ? defaults : {});
@@ -139,7 +141,7 @@
                     self._state = Tango.ViewState.afterShown;
 
                     //trigger a 'shown' event
-                    self.trigger('shown', self);
+                    self.trigger('shown', self, data, opts);
 
                     if (_.isFunction(opts.onShown)) {
                         opts.onShown.call(self, data, opts);
@@ -176,7 +178,7 @@
                     self._state = Tango.ViewState.afterHidden;
 
                     //trigger a 'hidden' event
-                    self.trigger('hidden', self);
+                    self.trigger('hidden', self, data, opts);
 
                     //delete view
                     self.removeEl();

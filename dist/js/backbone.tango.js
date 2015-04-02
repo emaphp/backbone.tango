@@ -51,6 +51,9 @@
         extendedTimeout: 1000
     };
 
+    //generate detault template function
+    var _defaultTemplate = _.template('<div class="<%=cssClass%>"><%=message%></div>');
+
     var Tango = Backbone.Tango = function(defaults) {
         //check if argument is a class
         if (_.isFunction(defaults)) {
@@ -169,7 +172,7 @@
                 self = this,
                 data = this.data;
             
-            self._state = Tango.ViewState.beforeHidden;
+            this._state = Tango.ViewState.beforeHidden;
 
             return this.$el[opts.hideMethod]({
                 duration: opts.hideDuration,
@@ -264,6 +267,8 @@
             //obtains a container element for the given options
             function getContainer(options) {
                 var containerId = getContainerId(options);
+
+                //return previously generated container
                 if (containers[containerId]) {
                     return containers[containerId];
                 }
@@ -298,8 +303,6 @@
                 $container.appendTo($(options.target));
                 return $container;
             }
-
-            var _defaultTemplate = _.template('<div class="<%=cssClass%>"><%=message%></div>');
 
             function getTemplate(options) {
                 var template;

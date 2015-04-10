@@ -87,6 +87,7 @@ tng.info("I'll stay longer", {
  * type: Notification type. Values: 'info', 'success', 'error', 'warning' (default: undefined). 
  * template: The function used to generate a notification view (default: undefined, when no template is found then a default one is used).
  * templateFn: A function that receives a list of options and returns a template function. It has priority over the *template* option (default: undefined).
+ * render: Determines if view is renderer automatically after creation (default: true).
  
 
 <br/>

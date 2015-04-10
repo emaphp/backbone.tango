@@ -1,5 +1,5 @@
 /*
- * Backbone.Tango v0.1.0
+ * Backbone.Tango v0.1.1
  * Copyright 2015 Emmanuel Antico
  * This library is distributed under the terms of the MIT license.
  */
@@ -33,6 +33,7 @@
         newestOnTop: true,
         template: undefined,
         templateFn: undefined,
+        render: true,
         
         //show options
         showMethod: 'fadeIn',
@@ -68,8 +69,9 @@
         this.initialize.apply(this, arguments);
     };
 
+    Tango.defaultTemplate = _defaultTemplate;
     Tango.extend = Backbone.Model.extend;
-    Tango.VERSION = '0.1.0';
+    Tango.Version = '0.1.1';
     
     //view states
     Tango.ViewState = {
@@ -315,7 +317,7 @@
             }
 
             //override notifier options
-            var options = typeof(optionsOverride) !== 'undefined' ? _.extend(this.defaults, optionsOverride) : this.defaults;
+            var options = typeof(optionsOverride) !== 'undefined' ? _.extend(_.extend({}, this.defaults), optionsOverride) : this.defaults;
 
             //get view class
             var viewClass = this.viewClass || View;
@@ -344,7 +346,7 @@
             $container.childList[view.cid] = view;
 
             //render and return
-            return view.render();
+            return !!options.render ? view.render() : view;
         }
     });
 

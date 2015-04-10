@@ -1,12 +1,12 @@
 {
   "name": "backbone.tango",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "homepage": "https://github.com/emaphp/backbone.tango",
   "authors": [
     "Emmanuel Antico <emmanuel.antico@gmail.com>"
   ],
   "description": "Notification library for Backbone.js",
-  "main": "dist/backbone.tango.js",
+  "main": "dist/js/backbone.tango.js",
   "moduleType": [
     "amd",
     "globals",

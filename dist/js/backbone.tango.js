@@ -1,5 +1,5 @@
 /*
- * Backbone.Tango v0.1.1
+ * Backbone.Tango v0.1.2
  * Copyright 2015 Emmanuel Antico
  * This library is distributed under the terms of the MIT license.
  */
@@ -71,7 +71,7 @@
 
     Tango.defaultTemplate = _defaultTemplate;
     Tango.extend = Backbone.Model.extend;
-    Tango.Version = '0.1.1';
+    Tango.Version = '0.1.2';
     
     //view states
     Tango.ViewState = {

@@ -1,6 +1,6 @@
 {
   "name": "backbone.tango",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Notification library for Backbone.js",
   "main": "dist/backbone.tango.js",
   "scripts": {

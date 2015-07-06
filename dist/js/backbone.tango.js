@@ -1,5 +1,5 @@
 /*
- * Backbone.Tango v0.1.2
+ * Backbone.Tango v0.2.0
  * Copyright 2015 Emmanuel Antico
  * This library is distributed under the terms of the MIT license.
  */
@@ -18,15 +18,16 @@
         notificationId = 0,
         containers = {};
 
-    //default options
+    // Default options
     var notifierDefaults = {
-        //container options
+        // Container options
         target: 'body',
         containerBaseId: 'tango-container',
         containerClass: 'tango-container',
 
-        //view options
-        defaultClass: 'tango',
+        // View options
+        viewClass: View,
+        cssClass: 'tango',
         position: 'top-right',
         type: 'info',
         timeout: 5000,
@@ -35,45 +36,37 @@
         templateFn: undefined,
         render: true,
         
-        //show options
+        // Show options
         showMethod: 'fadeIn',
         showDuration: 250,
         showEasing: 'swing',
         
-        //hiding options
+        // Hiding options
         hideMethod: 'fadeOut',
         hideDuration: 850,
         hideEasing: 'swing',
         
-        //events
+        // Events
         onHidden: undefined,
         onShown: undefined,
         tapToDismiss: true,
         extendedTimeout: 1000
     };
 
-    //generate detault template function
+    // Generate detault template function
     var _defaultTemplate = _.template('<div class="<%=cssClass%>"><%=message%></div>');
 
     var Tango = Backbone.Tango = function(defaults) {
-        //check if argument is a class
-        if (_.isFunction(defaults)) {
-            //obtain defaults from class prototype
-            this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(defaults.options) ? defaults.options : {});
-            this.viewClass = defaults;
-        } else {
-            this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(defaults) ? defaults : {});
-            this.viewClass = View; //use default view
-        }
-
+        var _defaults = _.isFunction(defaults) ? defaults.call() : defaults || _.extend({}, this.defaults);
+        this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(_defaults) ? _defaults : {});
         this.initialize.apply(this, arguments);
     };
 
     Tango.defaultTemplate = _defaultTemplate;
     Tango.extend = Backbone.Model.extend;
-    Tango.Version = '0.1.2';
+    Tango.VERSION = '0.2.0';
     
-    //view states
+    // View states
     Tango.ViewState = {
         beforeShown:  0,
         afterShown:   1,
@@ -89,7 +82,7 @@
                 this.data = options.data;
             }
 
-            //set initial state
+            // Set initial state
             this._state = Tango.ViewState.beforeShown;
         },
         
@@ -145,7 +138,7 @@
                 complete: function() {
                     self._state = Tango.ViewState.afterShown;
 
-                    //trigger a 'shown' event
+                    // Trigger a 'shown' event
                     self.trigger('shown', self, data, opts);
 
                     if (_.isFunction(opts.onShown)) {
@@ -182,22 +175,22 @@
                 complete: function() {
                     self._state = Tango.ViewState.afterHidden;
 
-                    //trigger a 'hidden' event
+                    // Trigger a 'hidden' event
                     self.trigger('hidden', self, data, opts);
 
-                    //delete view
+                    // Remove element
                     self.removeEl();
 
-                    //remove children from container
+                    // Remove children from container
                     delete self.$container[self.cid];
                     
-                    //if container is empty remove as well
+                    // If container is empty remove as well
                     if (self.$container.children().length === 0) {
                         delete containers[self.$container.attr('id')];
                         self.$container.remove();
                     }
                     
-                    //call 'onHidden' callback
+                    // Call 'onHidden' callback
                     if (_.isFunction(opts.onHidden)) {
                         opts.onHidden.call(self, data, opts);
                     }
@@ -210,7 +203,7 @@
                 return;
             }
 
-            //see http://stackoverflow.com/questions/6569704/destroy-or-remove-a-view-in-backbone-js
+            // See http://stackoverflow.com/questions/6569704/destroy-or-remove-a-view-in-backbone-js
             this.undelegateEvents();
             this.$el.removeData().unbind(); 
             this.remove();  
@@ -222,7 +215,7 @@
         }
     });
 
-    //generates a data object for a template
+    // Generates a data object for a template
     function compact(message, options) {
         var data = {
             options: options
@@ -260,37 +253,43 @@
             return this.notify(compact(message, options), options);
         },
 
+        loader: function(message, optionsOverride) {
+            var options = _.extend({type: 'loader'}, _.isObject(optionsOverride) ? optionsOverride : {});
+            return this.notify(compact(message, options), options);
+        },
+
         notify: function(data, optionsOverride) {
-            //generates a container id from the given options
+            // Generates a container id from the given options
             function getContainerId(options) {
                 return options.containerBaseId + '-' + options.position;
             }
 
-            //obtains a container element for the given options
+            // Obtains a container element for the given options
             function getContainer(options) {
                 var containerId = getContainerId(options);
 
-                //return previously generated container
+                // Return previously generated container
                 if (containers[containerId]) {
                     return containers[containerId];
                 }
 
+                // Create new container
                 $container = createContainer(options, containerId);
                 containers[containerId] = $container;
                 return $container;
             }
 
-            //returns a new container element
+            // Returns a new container element
             function createContainer(options, id) {
-                //create element
+                // Create element
                 $container = $('<div/>')
                     .attr('id', id)
                     .addClass(options.containerClass)
-                    .addClass(options.defaultClass + '-' + options.position)
+                    .addClass(options.cssClass + '-' + options.position)
                     .attr('aria-live', 'polite')
                     .attr('role', 'alert');
 
-                //inject 'clear' method
+                // Inject 'clear' method
                 _.extend($container, {
                     childList: {},
                     clear: function() {
@@ -306,6 +305,7 @@
                 return $container;
             }
 
+            // Returns a template function from the current notification options
             function getTemplate(options) {
                 var template;
 
@@ -316,25 +316,25 @@
                 return template || options.template || _defaultTemplate;
             }
 
-            //override notifier options
+            // Override notifier options
             var options = typeof(optionsOverride) !== 'undefined' ? _.extend(_.extend({}, this.defaults), optionsOverride) : this.defaults;
 
-            //get view class
-            var viewClass = this.viewClass || View;
+            // Get view class
+            var viewClass = this.defaults.viewClass || View;
 
-            //get template function
+            // Get template function
             var template = getTemplate(options);
         
-            //create container or obtain previous
+            // Create container or obtain previous
             var $container = getContainer(options);
 
-            //add 'id' and 'cssClass' attributes to template vars
+            // Add 'id' and 'cssClass' attributes to template vars
             _.extend(data, {
                 id: ++notificationId,
-                cssClass: options.defaultClass + (options.type ? ' ' + options.defaultClass + '-' + options.type : '')
+                cssClass: options.cssClass + (options.type ? ' ' + options.cssClass + '-' + options.type : '')
             });
 
-            //create notification view
+            // Create notification view
             var view = new viewClass({
                 el: $(template(data)),
                 $container: $container,
@@ -342,10 +342,10 @@
                 data: data
             });
             
-            //store view in container
+            // Store view in container
             $container.childList[view.cid] = view;
 
-            //render and return
+            // Render and return
             return !!options.render ? view.render() : view;
         }
     });

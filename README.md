@@ -17,18 +17,41 @@ Backbone.Tango is a Backbone.js notification library based on [toastr](https://g
     bower install backbone.tango --save
 
 <br/>
-> Node
+> npm
 
     npm install backbone.tango --save
 
 
 <br/>
-###Usage
+###Basic usage
+
+<br/>
+Include both the Javascript and the CSS files.
+
+<br/>
+```html
+<!doctype html>
+<html>
+    <head>
+        <script src="path/to/library/js/backbone.tango.js"></script>
+        <link rel="stylesheet" href="path/to/library/css/backbone.tango.css" />
+    </head>
+</html>
+```
+
+<br/>
+Create a new *Backbone.Tango* instance.
 
 <br/>
 ```javascript
 var tng = new Backbone.Tango();
+```
 
+<br/>
+Notifications are generated through the *success*, *info*, *warning* and *error* methods. These methods return an instance of *Backbone.Tango.View*, a subclass of *Backbone.View*.
+
+<br/>
+```javascript
 tng.success('Success!!!');
 
 tng.info('The more you know...');
@@ -39,10 +62,21 @@ tng.error('Ooops!');
 ```
 
 <br/>
-Methods *success*, *info*, *warning* and *error* return an instance of *Backbone.Tango.View*, a subclass of *Backbone.View*.
+An options object can be provided as a second argument.
 
+<br/>
 ```javascript
-var tng = new Backbone.Tango();
+tng.success('Success!!!', {
+    position: 'bottom-left',
+    timeout: 3000
+});
+```
+
+<br/>
+Each notification has an unique identifier stored in its *cid* attribute.
+
+<br/>
+```javascript
 var view = tng.error('Hasta la vista baby');
 console.log('View "' + view.cid + '" has been created');
 ```
@@ -51,9 +85,9 @@ console.log('View "' + view.cid + '" has been created');
 ###Options
 
 <br/>
-A default set of options could be provided when creating a new notifier instance.
+We can define a default set of options when creating a notifier instance. These options will be applied to each one of the notification generated from this instance.
 
-
+<br/>
 ```javascript
 var tng = new Backbone.Tango({
     position: 'top-left'
@@ -62,61 +96,46 @@ var tng = new Backbone.Tango({
 tng.success('Going left');
 ```
 
-<br/>
-Alternatively, you could also provide those options as a second argument when creating a new view.
-
-```javascript
-var tng = new Backbone.Tango();
-
-tng.success('I prefer right', {
-    position: 'bottom-right'
-});
-
-tng.info("I'll stay longer", {
-    position: 'top-left',
-    timeOut: 10000
-});
-```
 
 <br/>
 **View options**
 
- * position: Determines in which place notifications are shown. Values: 'top-right', 'top-left', 'bottom-right', 'bottom-left' (default: 'top-right').
+ * position: Determines in which place notifications are shown. Values: 'top-right', 'top-left', 'bottom-right', 'bottom-left', 'top-center', 'bottom-center', 'top-full-width', 'bottom-full-width' (default: 'top-right').
  * timeout: The amount of time (in milliseconds) a notification remains visible (default: 5000).
  * newestOnTop: Determines if new notifications are rendered on top of old ones (default: true).
- * type: Notification type. Values: 'info', 'success', 'error', 'warning' (default: undefined). 
- * template: The function used to generate a notification view (default: undefined, when no template is found then a default one is used).
- * templateFn: A function that receives a list of options and returns a template function. It has priority over the *template* option (default: undefined).
+ * type: Notification type. Values: 'info', 'success', 'error', 'warning' (default: *undefined*). 
+ * template: The function used to generate a notification view (default: *undefined*, when no template is found then a default one is used).
+ * templateFn: A function that receives a list of options and returns a template function. It has priority over the *template* option (default: *undefined*).
  * render: Determines if view is renderer automatically after creation (default: true).
  
 
 <br/>
 **Presentation options**
 
- * defaultClass: A CSS class used for all notification views. When a notification defines a *type* it will also be used to generate an additional class ("tango-success", "tango-warning", etc) (default: "tango").
- * showMethod: The jQuery method used to show the current view (default: 'fadeIn').
+ * cssClass: A CSS class used for all notification views. When a notification defines a *type* it will also be used to generate an additional class ("tango-success", "tango-warning", etc) (default: *'tango'*).
+ * showMethod: The jQuery method used to show the current view (default: *'fadeIn'*).
  * showDuration: The amount of time (in milliseconds) for the specified show animation (default: 250).
- * showEasing: The easing method used for the specified show animation (default: 'swing').
- * hideMethod: The jQuery method used to hide the current view (default: 'fadeOut').
+ * showEasing: The easing method used for the specified show animation (default: *'swing'*).
+ * hideMethod: The jQuery method used to hide the current view (default: *'fadeOut'*).
  * hideDuration: The amount of time (in milliseconds) for the specified hide animation (default: 850).
- * hideEasing: The easing method used for the specified hide animation (default: 'swing').
+ * hideEasing: The easing method used for the specified hide animation (default: *'swing'*).
 
 <br/>
 **Events options**
 
- * tapToDismiss: Determines if a view is removed after a *click* event (default: true).
+ * tapToDismiss: Determines if a view is removed after a *click* event (default: *true*).
  * extendedTimeout: The time in milliseconds in which a notification remains visible after a hover event (default: 1000).
- * onShown: A function called when a view is shown (default: undefined).
- * onHidden: A function called when a view is hdden (default: undefined).
+ * onShown: A function called when a view is shown (default: *undefined*).
+ * onHidden: A function called when a view is hdden (default: *undefined*).
 
 <br/>
 **Container options**
 
 Containers are elements that wrap one or more notificacions in order to be displayed in the requested position. When a notification is removed from screen it also checks if the current container has any childs left. Empty containers are removed as well.
 
- * target: The element where all notification containers are appended to (default: 'body').
- * containerBaseId: All containers are generated using and id that combines this option and the position where is rendered (default: 'tango-container').
- * containerClass: A CSS class used for all containers (default: 'tango-container'). Containers also include an additional CSS class associated with the position.
+ * target: The element where all notification containers are appended to (default: *'body'*).
+ * containerBaseId: All containers are generated using and id that combines this option and the position where is rendered (default: *'tango-container'*).
+ * containerClass: A CSS class used for all containers (default: *'tango-container'*). Containers also include an additional CSS class associated with the position.
 
 
 <br/>
@@ -124,6 +143,8 @@ Containers are elements that wrap one or more notificacions in order to be displ
 
 <br/>
 This example illustrates how to use a default notification template using Undercore.js. We start by adding the following code to our page.
+
+<br/>
 ```html
 <script type="text/template" id="notifier-tpl">
     <div class="tango">
@@ -136,6 +157,7 @@ This example illustrates how to use a default notification template using Underc
 <br/>
 Now we create a new notifier instance using that template.
 
+<br/>
 ```javascript
 var notifier = new Backbone.Tango({
     template: _.template($('#notifier-tpl').html())
@@ -145,6 +167,7 @@ var notifier = new Backbone.Tango({
 <br/>
 This template receives a *title* and a *message* argument. We need to provide them using an object.
 
+<br/>
 ```javascript
 notifier.success({
     title: 'Hello',
@@ -153,8 +176,9 @@ notifier.success({
 ```
 
 <br/>
-That doesn't look like a success message at all. We still need to provide some styles. Notification templates receive an additional argument called *cssClass* that is generated on runtime and contains a string with the predefined CSS classes for that element. We could redefine our template like this.
+We still need to provide some styles. Notification templates receive an additional argument called *cssClass* that is generated on runtime and contains a string with the predefined CSS classes for that element. We could redefine our template like this.
 
+<br/>
 ```html
 <script type="text/template" id="notifier-tpl">
     <div class="<%=cssClass%>">
@@ -165,7 +189,7 @@ That doesn't look like a success message at all. We still need to provide some s
 ```
 
 <br/>
-The *cssClass* property is created using the *defaultClass* option and the specified notification type. For example, a success notification will receive a *cssClass* containing *"tango tango-success"*. Templates also receive an *id* and an *options* object. The first contains a numeric value that identifies the generated view while the second contains the options specified for that notification.
+The *cssClass* property is created using the *cssClass* option and the specified notification type. For example, a success notification will receive a *cssClass* containing *"tango tango-success"*. Templates also receive an *id* and an *options* object. The first contains a numeric value that identifies the generated view while the second contains the options specified for that notification.
 
 
 <br/>
@@ -175,6 +199,7 @@ The *cssClass* property is created using the *defaultClass* option and the speci
 <br/>
 The callbacks *onShown* and *onHidden* are invoked after their respective animations are completed. They receive both the data and the options objects as arguments and use the current view as the context.
 
+<br/>
 ```javascript
 var tng = new Backbone.Tango();
 
@@ -194,17 +219,17 @@ tng.warning('Stop right there criminal scum!', {
 <br/>
 We can also bind a callback to a view event just like any regular *Backbone* view. During its lifetime, a *Tango.View* instance triggers a *shown* and a *hidden* event. Any callback triggered by the *shown* event is called before the *onShown* callback. Same goes for the *hidden* event handler and the *onHidden* callback.
 
-
+<br/>
 ```javascript
 var tng = Backbone.Tango();
 var view = tng.info("The princess is in another castle");
 
-//bind a callback to the 'shown' event
+// Bind a callback to the 'shown' event
 view.on('shown', function(view, data, options) {
     console.log('Showing view "' + view.cid + '"');
 });
 
-//bind a callback to the 'hidden' event
+// Bind a callback to the 'hidden' event
 view.on('hidden', function(view, data, options) {
     console.log('Removing view "' + view.cid + '"');
 });
@@ -214,22 +239,23 @@ view.on('hidden', function(view, data, options) {
 ###Custom notifications
 
 <br/>
-The next example shows a custom notification view class that includes a closing button. The associated event has been defined through the *events* object in the class declaration. Notice that we also added a static property called *options*. This value will be used as the default configuration when creating our notifier object.
+The next example shows a custom notification view class that includes a closing button. The associated event has been defined through the *events* object in the class declaration. Notice that we also added a static property called *defaults*. This value will be used as the default configuration when creating our notifier object.
 
+<br/>
 ```javascript
-var Sticky = Backbone.Tango.View.extend({
+var CloseButtonNotification = Backbone.Tango.View.extend({
     events: {
         "click .close-button": "close"
     },
     
     close: function(e) {
         e.stopPropagation();
-        this.hide(true); //force hide
+        this.hide(true);
     }
 }, {
-    options: {
+    defaults: {
         templateFn: function(options) {
-            //return a special template when using a 'success' notification
+            // Return a special template when using a 'success' notification
             switch(options.type) {
                 case 'success':
                    return _.template('<div class="notification success">
@@ -237,7 +263,6 @@ var Sticky = Backbone.Tango.View.extend({
                                         <p><%=message%> :)</p>
                                         <button class="close-button">Close</button>
                                       </div>');
-                   break;
                    
                 default:
                     return _.template('<div class="notification">
@@ -245,22 +270,25 @@ var Sticky = Backbone.Tango.View.extend({
                                         <p><%=message%></p>
                                         <button class="close-button">Close</button>
                                       </div>');
-                    break;
             }
         },
+        
         tapToDismiss: false,
+        
         timeout: 0,
+        
         extendedTimeout: 0
     }
 });
 ```
 
 <br/>
-Now we create a new notifier using the constructor as argument. Configuration values are imported from the class and used as defaults.
+Now we create a new notifier instance using the *defaults* property in the class prototype.
 
+<br/>
 ```javascript
-//import defaults from Sticky
-var tng = new Backbone.Tango(Sticky);
+// Import defaults from CloseButtonNotification
+var tng = new Backbone.Tango(CloseButtonNotification.options);
 
 tng.success({
     title: 'Welcome',

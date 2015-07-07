@@ -120,7 +120,10 @@
                 // Obtain default options from class
                 this.defaults = _.extend(_defaults, options.defaults);
                 this.defaults.viewClass = options;
-            } else {
+            } else if (_.isFunction(options.extend)) {
+                this.defaults = _.extend(_defaults, {viewClass: options});
+            }
+            else {
                 this.defaults = _.extend(_defaults, options.call());
             }
         } else {

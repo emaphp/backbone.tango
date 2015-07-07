@@ -1,9 +1,6 @@
 # Backbone.Tango
 Notification library for Backbone.js
 
-<br>
-[Demo](https://backbone-tango.herokuapp.com/ "")
-
 <br/>
 ###Demo
 

@@ -1,3 +1,9 @@
+/*
+ * Backbone.Tango v0.2.0
+ * Copyright 2015 Emmanuel Antico
+ * This library is distributed under the terms of the MIT license.
+ */
+
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,700");
 
 /**
@@ -138,7 +144,6 @@
 
 .tango-loader {
     text-align: center;
-    position: fixed;
 }
 
 /**

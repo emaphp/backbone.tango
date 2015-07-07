@@ -88,6 +88,7 @@
         templateFn: undefined,
         overlay: false,
         render: true,
+        clear: false,
         
         // Show options
         showMethod: 'fadeIn',
@@ -111,11 +112,12 @@
 
     // Tango class
     var Tango = Backbone.Tango = function(options) {
+        // Clone default options
         var _defaults = _.extend({}, notifierDefaults);
 
         if (_.isFunction(options)) {
-            // Obtain default options from class
             if (_.isObject(options.defaults)) {
+                // Obtain default options from class
                 this.defaults = _.extend(_defaults, options.defaults);
                 this.defaults.viewClass = options;
             } else {
@@ -126,9 +128,16 @@
         }
     };
 
-    Tango.clearAll = function () {
+    // Hides all notifications except for the provided
+    Tango.clearAll = function (except) {
         for (var key in containers) {
-            containers[key].clear();
+            var childs = containers[key].childList;
+
+            for (var child in childs) {
+                if (child !== except) {
+                    containers[key].childList[child].hide(true);
+                }
+            }
         }
     };
 
@@ -189,9 +198,10 @@
             }
         },
         
-        render: function(clearAll) {
-            if (clearAll) {
-                Tango.clearAll();
+        render: function() {
+            // Remove other notifications
+            if (this.options.clear) {
+                Tango.clearAll(this.cid);
             }
 
             // Show overlay
@@ -199,6 +209,7 @@
                 $overlay = getOverlay(this);
             }
 
+            // Append element and apply animation
             this.$container[this.options.newestOnTop ? 'prepend' : 'append'](this.el);
             this.fadeIn();
             return this;
@@ -341,7 +352,8 @@
                 hideDuration: 250,
                 timeout: 0,
                 extendedTimeout: 0,
-                tapToDismiss: false
+                tapToDismiss: false,
+                clear: true
             }, _.isObject(optionsOverride) ? optionsOverride : {});
             return this.notify(compact(message, options), options);
         },

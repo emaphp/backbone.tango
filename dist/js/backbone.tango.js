@@ -16,7 +16,59 @@
 }(this, function (global, Backbone, _) {
     var $ = Backbone.$,
         notificationId = 0,
-        containers = {};
+        containers = {},
+        $overlay = null;
+
+    // Obtains an overlay instance
+    function getOverlay(view) {
+        if (!$overlay) {
+            // Create element
+            $overlay = $('<div/>').addClass('tango-overlay');
+            $overlay._childs = {};
+
+            // Include Backbone.Events so we can listen to view 'hidden' event
+            _.extend($overlay, Backbone.Events);
+
+            // Append element
+            $overlay.hide();
+            $overlay.appendTo($(view.options.target));
+
+            // Animate
+            $overlay.fadeIn({
+                duration: 150,
+                easing: 'swing'
+            });
+        }
+
+        // Store child view
+        var cid = view.cid;
+        $overlay._childs[cid] = view;
+
+        // Remove children from list when hidden
+        $overlay.listenTo(view, 'hidden', function () {
+            $overlay.stopListening(view);
+            delete $overlay._childs[cid];
+            if (_.keys($overlay._childs).length === 0) {
+                $overlay.fadeOut({
+                    duration: 250,
+                    easing: 'swing',
+                    complete: function () {
+                        removeOverlay();
+                    }
+                });
+            }
+        });
+
+        return $overlay;
+    }
+
+    // Removes current overlay
+    function removeOverlay() {
+        if ($overlay) {
+            $overlay.remove();
+            $overlay = null;
+        }
+    }
 
     // Default options
     var notifierDefaults = {
@@ -34,6 +86,7 @@
         newestOnTop: true,
         template: undefined,
         templateFn: undefined,
+        overlay: false,
         render: true,
         
         // Show options
@@ -43,7 +96,7 @@
         
         // Hiding options
         hideMethod: 'fadeOut',
-        hideDuration: 850,
+        hideDuration: 650,
         hideEasing: 'swing',
         
         // Events
@@ -54,12 +107,29 @@
     };
 
     // Generate detault template function
-    var _defaultTemplate = _.template('<div class="<%=cssClass%>"><%=message%></div>');
+    var _defaultTemplate = _.template('<div class="<%=cssClass%>"><% if (isLoader) { %><div class="tango-loader-pulse"><div></div><div></div><div></div></div><% } %><%=message%></div>');
 
-    var Tango = Backbone.Tango = function(defaults) {
-        var _defaults = _.isFunction(defaults) ? defaults.call() : defaults || _.extend({}, this.defaults);
-        this.defaults = _.extend(_.extend({}, notifierDefaults), _.isObject(_defaults) ? _defaults : {});
-        this.initialize.apply(this, arguments);
+    // Tango class
+    var Tango = Backbone.Tango = function(options) {
+        var _defaults = _.extend({}, notifierDefaults);
+
+        if (_.isFunction(options)) {
+            // Obtain default options from class
+            if (_.isObject(options.defaults)) {
+                this.defaults = _.extend(_defaults, options.defaults);
+                this.defaults.viewClass = options;
+            } else {
+                this.defaults = _.extend(_defaults, options.call());
+            }
+        } else {
+            this.defaults = _.extend(_defaults, _.isObject(options) ? options : {});
+        }
+    };
+
+    Tango.clearAll = function () {
+        for (var key in containers) {
+            containers[key].clear();
+        }
     };
 
     Tango.defaultTemplate = _defaultTemplate;
@@ -119,7 +189,16 @@
             }
         },
         
-        render: function() {
+        render: function(clearAll) {
+            if (clearAll) {
+                Tango.clearAll();
+            }
+
+            // Show overlay
+            if (this.options.overlay) {
+                $overlay = getOverlay(this);
+            }
+
             this.$container[this.options.newestOnTop ? 'prepend' : 'append'](this.el);
             this.fadeIn();
             return this;
@@ -254,7 +333,16 @@
         },
 
         loader: function(message, optionsOverride) {
-            var options = _.extend({type: 'loader'}, _.isObject(optionsOverride) ? optionsOverride : {});
+            var options = _.extend({
+                type: 'loader',
+                position: 'top-center',
+                overlay: true,
+                showDuration: 150,
+                hideDuration: 250,
+                timeout: 0,
+                extendedTimeout: 0,
+                tapToDismiss: false
+            }, _.isObject(optionsOverride) ? optionsOverride : {});
             return this.notify(compact(message, options), options);
         },
 
@@ -317,7 +405,8 @@
             }
 
             // Override notifier options
-            var options = typeof(optionsOverride) !== 'undefined' ? _.extend(_.extend({}, this.defaults), optionsOverride) : this.defaults;
+            var defaults = _.extend({}, this.defaults);
+            var options = typeof(optionsOverride) !== 'undefined' ? _.extend(defaults, optionsOverride) : this.defaults;
 
             // Get view class
             var viewClass = this.defaults.viewClass || View;
@@ -331,7 +420,8 @@
             // Add 'id' and 'cssClass' attributes to template vars
             _.extend(data, {
                 id: ++notificationId,
-                cssClass: options.cssClass + (options.type ? ' ' + options.cssClass + '-' + options.type : '')
+                cssClass: options.cssClass + (options.type ? ' ' + options.cssClass + '-' + options.type : ''),
+                isLoader: options.type === 'loader'
             });
 
             // Create notification view

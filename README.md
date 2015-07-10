@@ -324,7 +324,9 @@ var tng = new Backbone.Tango();
 var view = tng.loader('Loading...');
 
 // Show loader for 4 seconds
-setTimeout(view.hide, 4000);
+setTimeout(function () {
+    view.hide();
+}, 4000);
 ```
 
 <br/>

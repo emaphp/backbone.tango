@@ -39,6 +39,7 @@ Start by including both the javascript and the css files.
 <!doctype html>
 <html>
     <head>
+        <!-- jQuery, Underscore.js and Backbone.js goes here -->
         <script src="path/to/library/js/backbone.tango.js"></script>
         <link rel="stylesheet" href="path/to/library/css/backbone.tango.css" />
     </head>
@@ -104,7 +105,6 @@ tng.success('Going left');
  * template: The function used to generate a notification view (default: *undefined*, when no template is found then a default one is used).
  * templateFn: A function that receives a list of options and returns a template function. It has priority over the *template* option (default: *undefined*).
  * render: Determines if the notification is renderer automatically after creation (default: true).
- * overlay: When true, an overlay is appended before showing the notification (Default: *false*).
  * clear: When true, all notifications are removed except for the current one (Default: *false*).
  * viewClass: The default view class (Default: *Backbone.Tango.View*).
  
@@ -137,6 +137,11 @@ Containers are elements that wrap one or more notificacions in order to be displ
  * containerBaseId: All containers are generated using and id that combines this option and the position where is rendered (default: *'tango-container'*).
  * containerClass: A CSS class used for all containers (default: *'tango-container'*). Containers also include an additional CSS class associated with the position.
 
+<br/>
+**Overlay options**
+
+ * overlay: When true, an overlay is appended to the document before showing the notification (Default: *false*).
+ * overlayClass: The CSS class used by the overlay (Default *'tango-overlay'*)
 
 <br/>
 ###Using templates
@@ -176,7 +181,7 @@ notifier.success({
 ```
 
 <br/>
-Notification templates receive an additional argument called *cssClass* that is generated on runtime and contains a string with the predefined CSS classes for that element. We could redefine our template like this.
+Notification templates receive an additional argument called *cssClass* that is generated on runtime and contains a string with the predefined CSS classes for that element. 
 
 <br/>
 ```html
@@ -259,14 +264,14 @@ var CloseableNotification = Backbone.Tango.View.extend({
             // Return a special template when using a 'success' notification
             switch(options.type) {
                 case 'success':
-                   return _.template('<div class="notification success">
+                   return _.template('<div class="<%=cssClass%>">
                                         <h4><%=title%>!!!</h4>
                                         <p><%=message%> :)</p>
                                         <button class="close-button">Close</button>
                                       </div>');
                    
                 default:
-                    return _.template('<div class="notification">
+                    return _.template('<div class="<%=cssClass%>">
                                         <h4><%=title%></h4>
                                         <p><%=message%></p>
                                         <button class="close-button">Close</button>

@@ -1,5 +1,5 @@
 /*
- * Backbone.Tango v0.2.0
+ * Backbone.Tango v0.2.1
  * Copyright 2015 Emmanuel Antico
  * This library is distributed under the terms of the MIT license.
  */
@@ -23,7 +23,7 @@
     function getOverlay(view) {
         if (!$overlay) {
             // Create element
-            $overlay = $('<div/>').addClass('tango-overlay');
+            $overlay = $('<div/>').addClass(view.options.overlayClass);
             $overlay._childs = {};
 
             // Include Backbone.Events so we can listen to view 'hidden' event
@@ -86,10 +86,13 @@
         newestOnTop: true,
         template: undefined,
         templateFn: undefined,
-        overlay: false,
         render: true,
         clear: false,
         
+        // Overlay options
+        overlay: false,
+        overlayClass: 'tango-overlay',
+
         // Show options
         showMethod: 'fadeIn',
         showDuration: 250,

@@ -1,5 +1,5 @@
 /*
- * Backbone.Tango v0.2.1
+ * Backbone.Tango v0.3.0
  * Copyright 2015 Emmanuel Antico
  * This library is distributed under the terms of the MIT license.
  */
@@ -87,7 +87,12 @@
         template: undefined,
         templateFn: undefined,
         render: true,
-        clear: false,
+        clearAll: false,
+        clearContainer: false,
+
+        // Template options
+        includeDefaultVars: true,
+        templateVars: {},
         
         // Overlay options
         overlay: false,
@@ -114,24 +119,16 @@
     var _defaultTemplate = _.template('<div class="<%=cssClass%>"><% if (isLoader) { %><div class="tango-loader-pulse"><div></div><div></div><div></div></div><% } %><%=message%></div>');
 
     // Tango class
-    var Tango = Backbone.Tango = function(options) {
-        // Clone default options
-        var _defaults = _.extend({}, notifierDefaults);
+    var Tango = Backbone.Tango = {};
+    Tango.VERSION = '0.3.0';
+    Tango.defaultTemplate = _defaultTemplate;
 
-        if (_.isFunction(options)) {
-            if (_.isObject(options.defaults)) {
-                // Obtain default options from class
-                this.defaults = _.extend(_defaults, options.defaults);
-                this.defaults.viewClass = options;
-            } else if (_.isFunction(options.extend)) {
-                this.defaults = _.extend(_defaults, {viewClass: options});
-            }
-            else {
-                this.defaults = _.extend(_defaults, options.call());
-            }
-        } else {
-            this.defaults = _.extend(_defaults, _.isObject(options) ? options : {});
-        }
+    // View states
+    Tango.ViewState = {
+        beforeShown:  0,
+        afterShown:   1,
+        beforeHidden: 2,
+        afterHidden:  3
     };
 
     // Hides all notifications except for the provided
@@ -147,18 +144,29 @@
         }
     };
 
-    Tango.defaultTemplate = _defaultTemplate;
-    Tango.extend = Backbone.Model.extend;
-    Tango.VERSION = '0.2.0';
-    
-    // View states
-    Tango.ViewState = {
-        beforeShown:  0,
-        afterShown:   1,
-        beforeHidden: 2,
-        afterHidden:  3
+    // Notifier class
+    var Notifier = Tango.Notifier = function(options) {
+        // Clone default options
+        var _defaults = _.extend({}, notifierDefaults);
+
+        // Check if argument is a view class
+        if (_.isFunction(options)) {
+            // Import the options from its 'defaults' static property
+            if (_.isObject(options.defaults)) {
+                this.defaults = _.extend(_defaults, options.defaults);
+                this.defaults.viewClass = options;
+            } else { // Invoke function a merge return value with options
+                this.defaults = _.extend(_defaults, options.call());
+            }
+        } else {
+            // Merge values with defaults
+            this.defaults = _.extend(_defaults, _.isObject(options) ? options : {});
+        }
     };
 
+    // Make notifier extendable
+    Notifier.extend = Backbone.Model.extend;
+    
     var View = Tango.View = Backbone.View.extend({
         initialize: function(options) {
             if (typeof options !== 'undefined') {
@@ -206,7 +214,7 @@
         
         render: function() {
             // Remove other notifications
-            if (this.options.clear) {
+            if (this.options.clearAll) {
                 Tango.clearAll(this.cid);
             }
 
@@ -308,26 +316,37 @@
         
         getContainer: function() {
             return this.container;
-        }
+        },
     });
 
     // Generates a data object for a template
     function compact(message, options) {
-        var data = {
-            options: options
-        };
-
-        if (_.isObject(message)) {
-            _.extend(data, message);
-        } else {
-            data.message = message;
-        }
-
-        return data;
+        return _.isObject(message) ? message : {message: message};
     }
 
-    _.extend(Tango.prototype, {
+    _.extend(Tango.Notifier.prototype, {
         initialize: function() {},
+
+        _includeDefaultVars: function (data, options) {
+            if (options.includeDefaultVars) {
+                _.extend(data, {
+                    nid: ++notificationId,
+                    cssClass: options.cssClass + (options.type ? ' ' + options.cssClass + '-' + options.type : ''),
+                    isLoader: options.type === 'loader'
+                });
+            }
+            
+            // Inject additional template vars
+            if (_.isFunction(this.templateVars)) {
+                var values = this.templateVars(options);
+
+                if (_.isObject(values)) {
+                    _.extend(data, values);
+                }
+            } else if (_.isObject(options.templateVars)) {
+                _.extend(data, options.templateVars);
+            }
+        },
 
         info: function(message, optionsOverride) {
             var options = _.extend({type: 'info'}, _.isObject(optionsOverride) ? optionsOverride : {});
@@ -364,53 +383,56 @@
             return this.notify(compact(message, options), options);
         },
 
-        notify: function(data, optionsOverride) {
-            // Generates a container id from the given options
-            function getContainerId(options) {
-                return options.containerBaseId + '-' + options.position;
+        _getContainer: function (options) {
+            var containerId = options.containerBaseId + '-' + options.position;
+
+            // Return previously generated container
+            if (containers[containerId]) {
+                return containers[containerId];
             }
 
-            // Obtains a container element for the given options
-            function getContainer(options) {
-                var containerId = getContainerId(options);
+            // Create new container
+            $container = this._createContainer(options, containerId);
+            containers[containerId] = $container;
+            return $container;
+        },
 
-                // Return previously generated container
-                if (containers[containerId]) {
-                    return containers[containerId];
-                }
+        _createContainer: function (options, id) {
+            // Create element
+            $container = $('<div/>')
+                .attr('id', id)
+                .addClass(options.containerClass)
+                .addClass(options.cssClass + '-' + options.position)
+                .attr('aria-live', 'polite')
+                .attr('role', 'alert');
 
-                // Create new container
-                $container = createContainer(options, containerId);
-                containers[containerId] = $container;
-                return $container;
-            }
-
-            // Returns a new container element
-            function createContainer(options, id) {
-                // Create element
-                $container = $('<div/>')
-                    .attr('id', id)
-                    .addClass(options.containerClass)
-                    .addClass(options.cssClass + '-' + options.position)
-                    .attr('aria-live', 'polite')
-                    .attr('role', 'alert');
-
-                // Inject 'clear' method
-                _.extend($container, {
-                    childList: {},
-                    clear: function() {
-                        if (this.childList.length !== 0) {
-                            _.each(this.childList, function(view) {
-                                view.hide(true);
-                            });
-                        }
+            // Inject 'clear' method
+            _.extend($container, {
+                childList: {},
+                clear: function() {
+                    if (this.childList.length !== 0) {
+                        _.each(this.childList, function(view) {
+                            view.hide(true);
+                        });
                     }
-                });
-                
-                $container.appendTo($(options.target));
-                return $container;
+                }
+            });
+            
+            $container.appendTo($(options.target));
+            return $container;
+        },
+
+        _getTemplate: function (options) {
+            var template;
+
+            if (_.isFunction(options.templateFn)) {
+                template = options.templateFn(options);
             }
 
+            return template || options.template || _defaultTemplate;
+        },
+
+        notify: function(data, optionsOverride) {
             // Returns a template function from the current notification options
             function getTemplate(options) {
                 var template;
@@ -430,17 +452,13 @@
             var viewClass = this.defaults.viewClass || View;
 
             // Get template function
-            var template = getTemplate(options);
+            var template = this._getTemplate(options);
         
             // Create container or obtain previous
-            var $container = getContainer(options);
+            var $container = this._getContainer(options);
 
-            // Add 'id' and 'cssClass' attributes to template vars
-            _.extend(data, {
-                id: ++notificationId,
-                cssClass: options.cssClass + (options.type ? ' ' + options.cssClass + '-' + options.type : ''),
-                isLoader: options.type === 'loader'
-            });
+            // Add 'nid' and 'cssClass' attributes to template vars
+            this._includeDefaultVars(data, options);
 
             // Create notification view
             var view = new viewClass({
@@ -455,6 +473,38 @@
 
             // Render and return
             return !!options.render ? view.render() : view;
+        },
+
+        // Generates a new notification view from a view class
+        make: function (viewClass, data, options) {
+            var defaults = _.extend({}, this.defaults, _.isObject(viewClass.defaults) ? viewClass.defaults : {});
+
+            if (_.isObject(options)) {
+                _.extend(defaults, options);
+            }
+
+            // Get template function
+            var template = this._getTemplate(defaults);
+        
+            // Create container or obtain previous
+            var $container = this._getContainer(defaults);
+
+            // Add 'nid' and 'cssClass' attributes to template vars
+            this._includeDefaultVars(data, defaults);
+
+            // Create notification view
+            var view = new viewClass({
+                el: $(template(data)),
+                $container: $container,
+                options: defaults,
+                data: data
+            });
+
+            // Store view in container
+            $container.childList[view.cid] = view;
+
+            // Render and return
+            return !!defaults.render ? view.render() : view;
         }
     });
 

@@ -1,0 +1,32 @@
+/*
+ * Backbone.Tango v0.3.0
+ * Copyright 2015 Emmanuel Antico
+ * This library is distributed under the terms of the MIT license.
+ */
+
+@import "variables";
+
+ /**
+ * RESPONSIVE STYLES
+ */
+
+@media all and (max-width: 240px) {
+    .tango-container > div {
+        padding: $tango-sm-padding;
+        width: $tango-sm-width;
+    }
+}
+
+@media all and (min-width: 241px) and (max-width: 480px) {
+    .tango-container > div {
+        padding: $tango-md-padding;
+        width: $tango-md-width;
+    }
+}
+
+@media all and (min-width: 481px) and (max-width: 768px) {
+    .tango-container > div {
+        padding: $tango-lg-padding;
+        width: $tango-lg-width;
+    }
+}

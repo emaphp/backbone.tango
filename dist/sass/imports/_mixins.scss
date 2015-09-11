@@ -1,0 +1,38 @@
+/*
+ * Backbone.Tango v0.3.0
+ * Copyright 2015 Emmanuel Antico
+ * This library is distributed under the terms of the MIT license.
+ */
+
+ @mixin box-sizing($sizing) {
+    -moz-box-sizing: $sizing;
+    -webkit-box-sizing: $sizing;
+    box-sizing: $sizing;
+ }
+
+@mixin border-radius($border-radius) {
+    -moz-border-radius: $border-radius;
+    -webkit-border-radius: $border-radius;
+    border-radius: $border-radius;
+}
+
+@mixin box-shadow($box-shadow) {
+    -moz-box-shadow: $box-shadow;
+    -webkit-box-shadow: $box-shadow;
+    box-shadow: $box-shadow;
+}
+
+@mixin animation($name, $duration, $delay, $iter, $func) {
+    -webkit-animation: $name $duration $delay $iter $func;
+    animation: $name $duration $delay $iter $func;
+}
+
+ @mixin animation-fill-mode($mode) {
+    -webkit-animation-fill-mode: $mode;
+    animation-fill-mode: $mode;
+ }
+
+ @mixin transform($animation) {
+    -webkit-transform: $animation;
+    transform: $animation;
+}

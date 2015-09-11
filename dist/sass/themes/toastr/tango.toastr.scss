@@ -1,0 +1,48 @@
+/*
+ * Backbone.Tango v0.3.0
+ * Copyright 2015 Emmanuel Antico
+ * This library is distributed under the terms of the MIT license.
+ */
+
+@import "variables";
+@import "../../imports/mixins";
+
+.tango-container {
+    & > div {
+        position: relative;
+        overflow: hidden;
+        margin: $tango-toastr-margin;
+        padding: $tango-toastr-padding;
+        width: $tango-toastr-width;
+        color: $tango-toastr-color;
+        opacity: $tango-toastr-opacity;
+        @include box-shadow($tango-toastr-box-shadow);
+        @include border-radius($tango-toastr-border-radius);
+    }
+
+    & > :hover {
+        @include box-shadow($tango-toastr-hover-box-shadow);
+        opacity: $tango-toastr-hover-opacity;
+        cursor: $tango-toastr-hover-cursor;
+    }
+}
+
+.tango {
+    background-color: $tango-toastr-default-background;
+}
+
+.tango-success {
+    background-color: $tango-toastr-success-background;
+}
+
+.tango-error {
+    background-color: $tango-toastr-error-background;
+}
+
+.tango-info {
+    background-color: $tango-toastr-info-background;
+}
+
+.tango-warning {
+    background-color: $tango-toastr-warning-background;
+}

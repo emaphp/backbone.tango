@@ -1,0 +1,26 @@
+/*
+ * Backbone.Tango v0.3.0
+ * Copyright 2015 Emmanuel Antico
+ * This library is distributed under the terms of the MIT license.
+ */
+
+// Container
+$tango-container-z-index: 100000 !default;
+
+// Positions
+$tango-center-offset: 1% !default;
+$tango-corner-offset: 12px !default;
+$tango-full-width: 96% !default;
+
+// Overlay
+$tango-overlay-background: #000 !default;
+$tango-overlay-opacity: 0.65 !default;
+$tango-overlay-z-index: ($tango-container-z-index - 1) !default;
+
+// Responsive
+$tango-sm-padding: 8px 8px 8px 7px !default;
+$tango-sm-width: 11em !default;
+$tango-md-padding: 8px 8px 8px 7px !default;
+$tango-md-width: 18em !default;
+$tango-lg-padding: 15px 15px 15px 13px !default;
+$tango-lg-width: 25em !default;

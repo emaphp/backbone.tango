@@ -1,6 +1,6 @@
 {
   "name": "backbone.tango",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "homepage": "https://github.com/emaphp/backbone.tango",
   "authors": [
     "Emmanuel Antico <emmanuel.antico@gmail.com>"
@@ -26,8 +26,8 @@
     "tests"
   ],
   "dependencies": {
-    "backbone": ">=1.1.0",
-    "underscore": ">=1.6.0"
+    "backbone": ">=1.2.0",
+    "underscore": ">=1.8.0"
   },
   "devDependencies": {
     "jquery": "~2.1.3"

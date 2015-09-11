@@ -32,7 +32,17 @@ module.exports = function(grunt) {
 
             target: {
                 files: {
-                    'dist/css/<%= pkg.name %>.min.css': 'dist/css/<%= pkg.name %>.css'
+                    'dist/css/<%= pkg.name %>.min.css': 'dist/css/<%= pkg.name %>.css',
+                    'dist/css/themes/tango.toastr.min.css': 'dist/css/themes/tango.toastr.css'
+                }
+            }
+        },
+
+        sass: {
+            dist: {
+                files: {
+                    'dist/css/<%= pkg.name %>.css': 'dist/sass/<%= pkg.name %>.scss',
+                    'dist/css/themes/tango.toastr.css': 'dist/sass/themes/toastr/tango.toastr.scss'
                 }
             }
         },
@@ -59,6 +69,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-contrib-sass');
 
 	//copies dependencies to test directory
 	grunt.registerTask('prepare', ['copy:jquery', 'copy:underscore', 'copy:backbone']);
@@ -67,5 +78,5 @@ module.exports = function(grunt) {
     grunt.registerTask('test', ['jshint']);
 
     //minifies library
-    grunt.registerTask('release', ['jshint', 'uglify:dist', 'cssmin']);
+    grunt.registerTask('release', ['jshint', 'uglify:dist', 'sass', 'cssmin']);
 };

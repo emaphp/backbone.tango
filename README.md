@@ -238,7 +238,7 @@ We can also bind a callback to a view event just like any regular *Backbone* vie
 <br/>
 ```javascript
 var notifier = new Backbone.Tango.Notifier();
-var view = notifier`info("The princess is in another castle");
+var view = notifier.info("The princess is in another castle");
 
 // Bind a callback to the 'shown' event
 view.on('shown', function(view, data, options) {

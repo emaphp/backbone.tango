@@ -144,6 +144,21 @@
         }
     };
 
+    // Hides all notifications in the specified container
+    Tango.clearContainer = function (options, except) {
+        var containerId = buildContainerId(options);
+
+        if (containers[containerId]) {
+            var childs = containers[containerId].childList;
+            
+            for (var child in childs) {
+                if (child !== except) {
+                    containers[containerId].childList[child].hide(true);
+                }
+            }
+        }
+    };
+
     // Notifier class
     var Notifier = Tango.Notifier = function(options) {
         // Clone default options
@@ -216,6 +231,8 @@
             // Remove other notifications
             if (this.options.clearAll) {
                 Tango.clearAll(this.cid);
+            } else if (this.options.clearContainer) {
+                Tango.clearContainer(this.options, this.cid);
             }
 
             // Show overlay
@@ -324,6 +341,11 @@
         return _.isObject(message) ? message : {message: message};
     }
 
+    // Generates a container ID from an options object
+    function buildContainerId(options) {
+        return options.containerBaseId + '-' + options.position;
+    }
+
     _.extend(Tango.Notifier.prototype, {
         initialize: function() {},
 
@@ -384,7 +406,7 @@
         },
 
         _getContainer: function (options) {
-            var containerId = options.containerBaseId + '-' + options.position;
+            var containerId = buildContainerId(options);
 
             // Return previously generated container
             if (containers[containerId]) {
